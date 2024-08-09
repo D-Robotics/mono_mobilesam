@@ -175,18 +175,11 @@ int MobileSamNode::SetNodePara() {
     model_input_width_ = tensor_properties.alignedShape.dimensionSize[2];
   }
 
-  models_[1]->GetInputTensorProperties(tensor_properties, 1);
-  int output_height = 0;
-  int output_width = 0;
+  models_[1]->GetOutputTensorProperties(tensor_properties, 1);
+  int output_height = tensor_properties.alignedShape.dimensionSize[2];
+  int output_width = tensor_properties.alignedShape.dimensionSize[3];
   int num_classes = tensor_properties.alignedShape.dimensionSize[0];
-  if (tensor_properties.tensorLayout == HB_DNN_LAYOUT_NCHW) {
-    output_height = tensor_properties.alignedShape.dimensionSize[2];
-    output_width = tensor_properties.alignedShape.dimensionSize[3];
-  } else if (tensor_properties.tensorLayout == HB_DNN_LAYOUT_NHWC) {
-    output_height = tensor_properties.alignedShape.dimensionSize[1];
-    output_width = tensor_properties.alignedShape.dimensionSize[2];
-  }
-  
+
   output_parser_ = std::make_shared<MobileSamOutputParser>(output_height, output_width, num_classes, 0.1);
   return 0;
 }
