@@ -330,8 +330,6 @@ int MobileSamNode::PostProcess(
     return -1;
   }
   
-  RCLCPP_ERROR(rclcpp::get_logger("MyDebug"), 
-      "place11");
   // 3.1 发布检测AI消息
   det_result->perception.det = parser_output->det;
   RCLCPP_INFO(rclcpp::get_logger("mono_mobilesam"),
