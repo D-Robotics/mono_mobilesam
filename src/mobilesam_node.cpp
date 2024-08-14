@@ -308,10 +308,16 @@ int MobileSamNode::PostProcess(
                 model_input_height_,
                 model_input_width_,
                 parser_output->output_tensors);
-
+  ai_msgs::msg::PerceptionTargets::UniquePtr pub_data(
+      new ai_msgs::msg::PerceptionTargets());
+  pub_data->header.set__stamp(parser_output->msg_header->stamp);
+  pub_data->header.set__frame_id(parser_output->msg_header->frame_id);
   // 如果开启了渲染，本地渲染并存储图片
-  if (dump_render_img_ == 1 && feed_type_ == 0) {
-    std::string saving_path = "render_feedback_0_0.jpeg";
+  if (dump_render_img_ == 1 && !parser_output->bgr_mat.empty()) {
+    std::string saving_path = "render_sam_" + pub_data->header.frame_id + "_" +
+                            std::to_string(pub_data->header.stamp.sec) + "_" +
+                            std::to_string(pub_data->header.stamp.nanosec) +
+                            ".jpeg";
     RenderSeg(parser_output->bgr_mat, det_result->perception.seg, saving_path);
   }
   if (feed_type_ == 0) {
@@ -323,9 +329,9 @@ int MobileSamNode::PostProcess(
     RCLCPP_ERROR(this->get_logger(), "Invalid msg_publisher_");
     return -1;
   }
-  ai_msgs::msg::PerceptionTargets::UniquePtr pub_data(
-      new ai_msgs::msg::PerceptionTargets());
-
+  
+  RCLCPP_ERROR(rclcpp::get_logger("MyDebug"), 
+      "place11");
   // 3.1 发布检测AI消息
   det_result->perception.det = parser_output->det;
   RCLCPP_INFO(rclcpp::get_logger("mono_mobilesam"),
@@ -531,6 +537,9 @@ void MobileSamNode::RosImgProcess(
   dnn_output->resized_h = bgr_mat.rows / dnn_output->ratio;
   dnn_output->resized_w = bgr_mat.cols / dnn_output->ratio;
 
+  if (dump_render_img_) {
+    dnn_output->bgr_mat = std::move(bgr_mat);
+  }
 
   // 3. 将准备好的输入输出数据存进缓存
   std::unique_lock<std::mutex> lg(mtx_img_);
@@ -617,6 +626,10 @@ void MobileSamNode::SharedMemImgProcess(
   dnn_output->resized_h = bgr_mat.rows / dnn_output->ratio;
   dnn_output->resized_w = bgr_mat.cols / dnn_output->ratio;
 
+  if (dump_render_img_) {
+    dnn_output->bgr_mat = std::move(bgr_mat);
+  }
+
   // 3. 将准备好的输入输出数据存进缓存
   std::unique_lock<std::mutex> lg(mtx_img_);
   if (cache_img_.size() > cache_len_limit_) {
@@ -654,9 +667,7 @@ int MobileSamNode::FeedFromLocal() {
   dnn_output->perf_preprocess.stamp_start.nanosec = time_now.tv_nsec;
   dnn_output->msg_header = std::make_shared<std_msgs::msg::Header>();
   dnn_output->msg_header->set__frame_id("feedback");
-  if (dump_render_img_) {
-    dnn_output->bgr_mat = cv::imread(image_file_, cv::IMREAD_COLOR);
-  }
+
 
   // 1. 获取图片数据DNNTensor
   hbDNNTensorProperties tensor_properties;
@@ -672,6 +683,10 @@ int MobileSamNode::FeedFromLocal() {
 
   dnn_output->resized_h = bgr_mat.rows / dnn_output->ratio;
   dnn_output->resized_w = bgr_mat.cols / dnn_output->ratio;
+
+  if (dump_render_img_) {
+    dnn_output->bgr_mat = std::move(bgr_mat);
+  }
 
   if (!tensor_image) {
     RCLCPP_ERROR(rclcpp::get_logger("mono_mobilesam"),
