@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <fstream>
 #include <math.h>
 #include <memory>
 #include <unistd.h>
@@ -36,23 +35,6 @@ int CalTimeMsDuration(const builtin_interfaces::msg::Time& start,
                       const builtin_interfaces::msg::Time& end) {
   return (end.sec - start.sec) * 1000 + end.nanosec / 1000 / 1000 -
          start.nanosec / 1000 / 1000;
-}
-
-
-template<typename T>
-int readbinary(const std::string &filename, const T* &dataOut) {
-  std::cout << "readbinary: " << filename + ".bin" << std::endl;
-  std::ifstream ifs(filename + ".bin", std::ios::in | std::ios::binary);
-  if (!ifs) {
-    return -1;
-  }
-  ifs.seekg(0, std::ios::end);
-  int len = ifs.tellg();
-  ifs.seekg(0, std::ios::beg);
-  char* data = new char[len];
-  ifs.read(data, len);
-  dataOut = reinterpret_cast<const T *>(data);
-  return len / sizeof(T);
 }
 
 MobileSamNode::MobileSamNode(const std::string& node_name,
@@ -108,7 +90,6 @@ MobileSamNode::MobileSamNode(const std::string& node_name,
     RCLCPP_ERROR(rclcpp::get_logger("mono_mobilesam"), "Init Node Para Failed!");
     return;
   }
-
 
   if (0 == feed_type_) {
     dump_render_img_ = 1;
@@ -435,12 +416,19 @@ int MobileSamNode::PostProcess(
       perf_postprocess.stamp_start, perf_postprocess.stamp_end));
   pub_data->perfs.emplace_back(perf_postprocess);
 
+  // 推理输出帧率统计
+  auto output_fps = round(1000 / (static_cast<float>(perf_preprocess.time_ms_duration) 
+                          + static_cast<float>(parser_output->rt_stat->infer_time_ms)));
+  pub_data->set__fps(output_fps);
+
   // 如果当前帧有更新统计信息，输出统计信息
   if (parser_output->rt_stat->fps_updated) {
       RCLCPP_WARN(rclcpp::get_logger("mono_mobilesam"),
+                  "Smart fps: %.2f, "
                   "pre process time ms: %d, "
                   "infer time ms: %d, "
                   "post process time ms: %d",
+                  output_fps,
                   static_cast<int>(perf_preprocess.time_ms_duration),
                   parser_output->rt_stat->infer_time_ms,
                   static_cast<int>(perf_postprocess.time_ms_duration));
@@ -743,42 +731,11 @@ int MobileSamNode::LoadModels() {
   return 0;
 }
 
-int MobileSamNode::Debug() {
-
-  std::vector<std::vector<float>> boxes =   
-      {{69.9, 166.20001, 264.30002, 203.70001}};
-
-  const float* mask;
-
-  readbinary("/mnt/ai_toolchain/models/sam/orlresult", mask);
-  auto parser = std::make_shared<MobileSamOutputParser>(96, 96, 5, 0.1);
-  auto det_result = std::make_shared<hobot::dnn_node::output_parser::DnnParserResult>();
-
-  Perception perception;
-  float ratio = 10.0 / 3;
-  parser->GenMask(mask, 288, 384, 384, 384, perception);
-
-  cv::Mat bgr_mat = cv::imread(image_file_, cv::IMREAD_COLOR);
-
-  std::string saving_path = "/mnt/testdata/render_sam_0.jpeg";
-  RenderSeg(bgr_mat, perception.seg, saving_path);
-
-  return 0;
-}
-
 void MobileSamNode::AiMsgProcess(
     const ai_msgs::msg::PerceptionTargets::ConstSharedPtr msg) {
   if (!msg || !rclcpp::ok() || !ai_msg_manage_) {
     return;
   }
-
-  std::stringstream ss;
-  ss << "Recved ai msg"
-     << ", frame_id: " << msg->header.frame_id
-     << ", stamp: " << msg->header.stamp.sec << "_"
-     << msg->header.stamp.nanosec;
-  RCLCPP_INFO(
-      rclcpp::get_logger("mono_mobilesam"), "%s", ss.str().c_str());
 
   ai_msg_manage_->Feed(msg);
 }

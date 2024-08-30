@@ -35,6 +35,9 @@ def generate_launch_description():
     )
     msg_pub_topic_name_launch_arg = DeclareLaunchArgument(
         "sam_msg_pub_topic_name", default_value=TextSubstitution(text="hobot_sam")
+    )    
+    is_regular_box_launch_arg = DeclareLaunchArgument(
+        "sam_is_regular_box", default_value=TextSubstitution(text="1")
     )
 
     camera_type = os.getenv('CAM_TYPE')
@@ -172,7 +175,8 @@ def generate_launch_description():
         output='screen',
         parameters=[
             {"feed_type": 1},
-            {"is_regular_box": 1},
+            {"is_regular_box": LaunchConfiguration(
+                "sam_is_regular_box")},
             {"is_shared_mem_sub": 1},
             {"msg_pub_topic_name": LaunchConfiguration(
                 "sam_msg_pub_topic_name")}
@@ -193,6 +197,7 @@ def generate_launch_description():
             image_width_launch_arg,
             image_height_launch_arg,
             msg_pub_topic_name_launch_arg,
+            is_regular_box_launch_arg,
             # 启动零拷贝环境配置node
             shared_mem_node,
             # 图片发布pkg
@@ -210,6 +215,7 @@ def generate_launch_description():
             image_width_launch_arg,
             image_height_launch_arg,
             msg_pub_topic_name_launch_arg,
+            is_regular_box_launch_arg,
             # 启动零拷贝环境配置node
             shared_mem_node,
             # 图片发布pkg

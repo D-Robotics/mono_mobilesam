@@ -112,27 +112,24 @@ X86 Ubuntu version: ubuntu22.04
 
 ## Parameters
 
-| Parameter Name      | Explanation                            | Mandatory            | Default Value       | Remarks                                                                 |
-| ------------------- | -------------------------------------- | -------------------- | ------------------- | ----------------------------------------------------------------------- |
-| feed_type           | Image source, 0: local; 1: subscribe   | No                   | 0                   |                                                                         |
-| image               | Local image path                       | No                   | config/test.jpg     |                                                                         |
-| is_shared_mem_sub   | Subscribe to images using shared memory communication method | No  | 0                   |                                                                         |                                                                   |
-| score_threshold | boxes confidence threshold | No | 0.05 | |
-| iou_threshold | nms iou threshold | No | 0.45 | |
-| nms_top_k | Detect the first k boxes | No | 50 | |
-| texts | detect types | No | "liquid stain,mild stain,solid stain,congee stain" | Separate each category with a comma in the middle |
-| dump_render_img     | Whether to render, 0: no; 1: yes       | No                   | 0                   |                                                                         |
-| ai_msg_pub_topic_name | Topic name for publishing intelligent results for web display | No                   | /mono_mobilesam | |
-| ros_img_sub_topic_name | Topic name for subscribing image msg | No                   | /image | |
-| ros_string_sub_topic_name | Topic name for subscribing string msg to change detect types| No                   | /target_words | |
+| Parameter Name      | Explanation                            | Mandatory            | Type | Default Value       |                                                                  |
+| ------------------- | -------------------------------------- | -------------------- | ------------------- |------------------------------------ |----------------------------------- |
+| cache_len_limit          | the length of the cached image buffer            | 否                   | int | 8                   |
+| feed_type           | Image source, 0: local; 1: subscribe   | No                   | int |0                   |
+| image               | Local image path                       | No        | string           | config/test.jpg     |
+| is_shared_mem_sub   | Subscribe to images using shared memory communication method | No  | int |0                   |
+| is_regular_box  | is use regular box | 否                   | int | 0                   |
+| dump_render_img     | Whether to render, 0: no; 1: yes       | No                   | int |0                   |
+| ai_msg_sub_topic_name | Topic name for subscribing ai msg to change detect box | No | string | /hobot_detection |
+| ai_msg_pub_topic_name | Topic name for publishing intelligent results for web display | No | string | /hobot_sam |
+| ros_img_sub_topic_name | Topic name for subscribing image msg | No | string | /image |
 
 ## Instructions
 
 - Topic control: mono_mobilesam supports controlling detection boxes through ai msg topic messages, as an example:
 
 ```shell
-ros2 topic pub /hobot_detection ai_msgs/msg/PerceptionTargets \
-'{"targets": [{"rois": [{"rect": {"x_offset": 96, "y_offset": 96, "height": 200, "height": 200}, "type": "anything"}]}]}'
+ros2 topic pub /hobot_detection ai_msgs/msg/PerceptionTargets '{ "header": { "stamp": { "sec": '$(date +%s)', "nanosec": '$(date +%N)' } }, "targets": [{"rois": [{"rect": {"x_offset": 96, "y_offset": 96, "width": 192, "height": 96}, "type": "anything"}]}] }'
 ```
 
 ## Running
@@ -159,8 +156,7 @@ ros2 run mono_mobilesam mono_mobilesam --ros-args -p feed_type:=1 -p is_shared_m
 
 ros2 run mono_mobilesam mono_mobilesam --ros-args -p feed_type:=1 --ros-args --log-level warn -p ai_msg_sub_topic_name:="/hobot_detection"
 
-ros2 topic pub /hobot_detection ai_msgs/msg/PerceptionTargets \
-'{"targets": [{"rois": [{"rect": {"x_offset": 96, "y_offset": 96, "height": 200, "height": 200}, "type": "anything"}]}]}'
+ros2 topic pub /hobot_detection ai_msgs/msg/PerceptionTargets '{ "header": { "stamp": { "sec": '$(date +%s)', "nanosec": '$(date +%N)' } }, "targets": [{"rois": [{"rect": {"x_offset": 96, "y_offset": 96, "width": 192, "height": 96}, "type": "anything"}]}] }'
 ```
 
 Running method 2, use a launch file:
@@ -202,8 +198,7 @@ cp -r install/lib/mono_mobilesam/config/ .
 
 ./install/lib/mono_mobilesam/mono_mobilesam --ros-args -p feed_type:=1 --ros-args --log-level warn -p ai_msg_sub_topic_name:="/hobot_detection"
 
-ros2 topic pub /hobot_detection ai_msgs/msg/PerceptionTargets \
-'{"targets": [{"rois": [{"rect": {"x_offset": 96, "y_offset": 96, "height": 200, "height": 200}, "type": "anything"}]}]}'
+ros2 topic pub /hobot_detection ai_msgs/msg/PerceptionTargets '{ "header": { "stamp": { "sec": '$(date +%s)', "nanosec": '$(date +%N)' } }, "targets": [{"rois": [{"rect": {"x_offset": 96, "y_offset": 96, "width": 192, "height": 96}, "type": "anything"}]}] }'
 ```
 
 ## Run on X86 Ubuntu system:
