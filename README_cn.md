@@ -124,15 +124,15 @@ hbm_img_msgs为自定义的图片消息格式, 用于shared mem场景下的图�
 | is_shared_mem_sub  | 使用shared mem通信方式订阅图片        | 否                   | int | 0                   |                                                                         |
 | is_regular_box  | 使用固定检测框输入SAM        | 否                   | int | 0                   |                                                                         |
 | dump_render_img    | 是否进行渲染，0：否；1：是            | 否                   | int | 0                   |                                                                         |
-| ai_msg_sub_topic_name | 订阅上游检测结果的topicname,用于SAM输入 | 否                   | string | /hobot_detection | |
+| ai_msg_sub_topic_name | 订阅上游检测结果的topicname,用于SAM输入 | 否                   | string | /hobot_dnn_detection | |
 | ai_msg_pub_topic_name | 发布智能结果的topicname,用于web端展示 | 否                   | string | /hobot_sam | |
 | ros_img_sub_topic_name | 接收ros图片话题名 | 否                   | string | /image | |
 
 ## 使用说明
 
 - 控制话题：mono_mobilesam 支持通过ai msg话题消息获取目标检测框。使用示例：
-```
-ros2 topic pub /hobot_detection ai_msgs/msg/PerceptionTargets '{ "header": { "stamp": { "sec": '$(date +%s)', "nanosec": '$(date +%N)' } }, "targets": [{"rois": [{"rect": {"x_offset": 96, "y_offset": 96, "width": 192, "height": 96}, "type": "anything"}]}] }'
+```shell
+ros2 topic pub /hobot_dnn_detection ai_msgs/msg/PerceptionTargets '{"targets": [{"rois": [{"rect": {"x_offset": 96, "y_offset": 96, "width": 192, "height": 96}, "type": "anything"}]}] }'
 ```
 
 ## 运行
@@ -159,10 +159,10 @@ ros2 run mono_mobilesam mono_mobilesam --ros-args -p feed_type:=0 -p image:=conf
 ros2 run mono_mobilesam mono_mobilesam --ros-args -p feed_type:=1 -p is_shared_mem_sub:=1 -p is_regular_box:=1 --ros-args --log-level warn
 
 # 运行模式3：
-# 使用shared mem通信方式(topic为/hbmem_img)进行预测, 设置ai订阅话题名(/hobot_detection)为并设置log级别为warn。同时在另一个窗口发送ai msg话题(topic为/hobot_detection) 变更检测框
-ros2 run mono_mobilesam mono_mobilesam --ros-args -p feed_type:=1 --ros-args --log-level warn -p ai_msg_sub_topic_name:="/hobot_detection"
+# 使用shared mem通信方式(topic为/hbmem_img)进行预测, 设置ai订阅话题名(/hobot_dnn_detection)为并设置log级别为warn。同时在另一个窗口发送ai msg话题(topic为/hobot_dnn_detection) 变更检测框
+ros2 run mono_mobilesam mono_mobilesam --ros-args -p feed_type:=1 --ros-args --log-level warn -p ai_msg_sub_topic_name:="/hobot_dnn_detection"
 
-ros2 topic pub /hobot_detection ai_msgs/msg/PerceptionTargets '{ "header": { "stamp": { "sec": '$(date +%s)', "nanosec": '$(date +%N)' } }, "targets": [{"rois": [{"rect": {"x_offset": 96, "y_offset": 96, "width": 192, "height": 96}, "type": "anything"}]}] }'
+ros2 topic pub /hobot_dnn_detection ai_msgs/msg/PerceptionTargets '{"targets": [{"rois": [{"rect": {"x_offset": 96, "y_offset": 96, "width": 192, "height": 96}, "type": "anything"}]}] }'
 
 ```
 
@@ -201,10 +201,10 @@ cp -r install/lib/mono_mobilesam/config/ .
 ./install/lib/mono_mobilesam/mono_mobilesam --ros-args -p feed_type:=1 -p is_shared_mem_sub:=1 -p is_regular_box:=1 --ros-args --log-level warn
 
 # 运行模式3：
-# 使用订阅到的image msg(topic为/image)进行预测, 设置ai订阅话题名(/hobot_detection)为并设置log级别为warn。同时在另一个窗口发送ai msg话题(topic为/hobot_detection) 变更检测框
-./install/lib/mono_mobilesam/mono_mobilesam --ros-args -p feed_type:=1 --ros-args --log-level warn -p ai_msg_sub_topic_name:="/hobot_detection"
+# 使用订阅到的image msg(topic为/image)进行预测, 设置ai订阅话题名(/hobot_dnn_detection)为并设置log级别为warn。同时在另一个窗口发送ai msg话题(topic为/hobot_dnn_detection) 变更检测框
+./install/lib/mono_mobilesam/mono_mobilesam --ros-args -p feed_type:=1 --ros-args --log-level warn -p ai_msg_sub_topic_name:="/hobot_dnn_detection"
 
-ros2 topic pub /hobot_detection ai_msgs/msg/PerceptionTargets '{ "header": { "stamp": { "sec": '$(date +%s)', "nanosec": '$(date +%N)' } }, "targets": [{"rois": [{"rect": {"x_offset": 96, "y_offset": 96, "width": 192, "height": 96}, "type": "anything"}]}] }'
+ros2 topic pub /hobot_dnn_detection ai_msgs/msg/PerceptionTargets '{"targets": [{"rois": [{"rect": {"x_offset": 96, "y_offset": 96, "width": 192, "height": 96}, "type": "anything"}]}] }'
 ```
 
 ## X86 Ubuntu系统上运行

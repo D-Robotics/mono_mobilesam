@@ -293,6 +293,9 @@ int MobileSamNode::PostProcess(
       new ai_msgs::msg::PerceptionTargets());
   pub_data->header.set__stamp(parser_output->msg_header->stamp);
   pub_data->header.set__frame_id(parser_output->msg_header->frame_id);
+
+  // output_parser_->UpdateBox(regular_box_, det_result->perception);
+
   // 如果开启了渲染，本地渲染并存储图片
   if (dump_render_img_ == 1 && !parser_output->bgr_mat.empty()) {
     std::string saving_path = "render_sam_" + pub_data->header.frame_id + "_" +
@@ -523,9 +526,6 @@ void MobileSamNode::RosImgProcess(
   dnn_output->resized_h = bgr_mat.rows / dnn_output->ratio;
   dnn_output->resized_w = bgr_mat.cols / dnn_output->ratio;
 
-  if (dump_render_img_) {
-    dnn_output->bgr_mat = std::move(bgr_mat);
-  }
 
   // 3. 将准备好的输入输出数据存进缓存
   std::unique_lock<std::mutex> lg(mtx_img_);
@@ -612,10 +612,6 @@ void MobileSamNode::SharedMemImgProcess(
   dnn_output->resized_h = bgr_mat.rows / dnn_output->ratio;
   dnn_output->resized_w = bgr_mat.cols / dnn_output->ratio;
 
-  if (dump_render_img_) {
-    dnn_output->bgr_mat = std::move(bgr_mat);
-  }
-
   // 3. 将准备好的输入输出数据存进缓存
   std::unique_lock<std::mutex> lg(mtx_img_);
   if (cache_img_.size() > cache_len_limit_) {
@@ -653,7 +649,9 @@ int MobileSamNode::FeedFromLocal() {
   dnn_output->perf_preprocess.stamp_start.nanosec = time_now.tv_nsec;
   dnn_output->msg_header = std::make_shared<std_msgs::msg::Header>();
   dnn_output->msg_header->set__frame_id("feedback");
-
+  if (dump_render_img_) {
+    dnn_output->bgr_mat = cv::imread(image_file_, cv::IMREAD_COLOR);
+  }
 
   // 1. 获取图片数据DNNTensor
   hbDNNTensorProperties tensor_properties;
@@ -669,10 +667,6 @@ int MobileSamNode::FeedFromLocal() {
 
   dnn_output->resized_h = bgr_mat.rows / dnn_output->ratio;
   dnn_output->resized_w = bgr_mat.cols / dnn_output->ratio;
-
-  if (dump_render_img_) {
-    dnn_output->bgr_mat = std::move(bgr_mat);
-  }
 
   if (!tensor_image) {
     RCLCPP_ERROR(rclcpp::get_logger("mono_mobilesam"),
@@ -796,13 +790,13 @@ void MobileSamNode::RunPredict() {
                                         500) < 0 ||
           !ai_msg) {
         RCLCPP_INFO(rclcpp::get_logger("mono_mobilesam"),
-                    "Frame ts %s get hand roi fail",
+                    "Frame ts %s get roi fail",
                     ts.c_str());
         continue;
       }
       if (!rois || rois->empty() || rois->size() != valid_roi_idx.size()) {
         RCLCPP_INFO(rclcpp::get_logger("mono_mobilesam"),
-                    "Frame ts %s has no hand roi",
+                    "Frame ts %s has no roi",
                     ts.c_str());
         ai_msgs::msg::PerceptionTargets::UniquePtr msg(
                       new ai_msgs::msg::PerceptionTargets());

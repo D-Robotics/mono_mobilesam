@@ -1,4 +1,4 @@
-// Copyright (c) 2024，Horizon Robotics.
+// Copyright (c) 2024，D-Robotics.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -154,7 +154,7 @@ class MobileSamNode : public DnnNode {
   rclcpp::Publisher<ai_msgs::msg::PerceptionTargets>::SharedPtr msg_publisher_ =
       nullptr;
 
-  std::string ai_msg_sub_topic_name_ = "/hobot_detection";
+  std::string ai_msg_sub_topic_name_ = "/hobot_dnn_detection";
   rclcpp::Subscription<ai_msgs::msg::PerceptionTargets>::SharedPtr
       ai_msg_subscription_ = nullptr;
   void AiMsgProcess(const ai_msgs::msg::PerceptionTargets::ConstSharedPtr msg);
