@@ -1,4 +1,4 @@
-// Copyright (c) 2024，Horizon Robotics.
+// Copyright (c) 2024，D-Robotics.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -289,6 +289,8 @@ int MobileSamNode::PostProcess(
                 model_input_height_,
                 model_input_width_,
                 parser_output->output_tensors);
+
+  // output_parser_->UpdateBox(regular_box_, det_result->perception);
 
   // 如果开启了渲染，本地渲染并存储图片
   if (dump_render_img_ == 1 && feed_type_ == 0) {
@@ -783,13 +785,13 @@ void MobileSamNode::RunPredict() {
                                         500) < 0 ||
           !ai_msg) {
         RCLCPP_INFO(rclcpp::get_logger("mono_mobilesam"),
-                    "Frame ts %s get hand roi fail",
+                    "Frame ts %s get roi fail",
                     ts.c_str());
         continue;
       }
       if (!rois || rois->empty() || rois->size() != valid_roi_idx.size()) {
         RCLCPP_INFO(rclcpp::get_logger("mono_mobilesam"),
-                    "Frame ts %s has no hand roi",
+                    "Frame ts %s has no roi",
                     ts.c_str());
         ai_msgs::msg::PerceptionTargets::UniquePtr msg(
                       new ai_msgs::msg::PerceptionTargets());

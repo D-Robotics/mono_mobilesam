@@ -1,4 +1,4 @@
-// Copyright (c) 2024，Horizon Robotics.
+// Copyright (c) 2024，D-Robotics.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -40,11 +40,11 @@ struct compare_msg {
   }
 };
 
-class HandLmkFeedCache {
+class AiMsgFeedCache {
  public:
-  explicit HandLmkFeedCache(int cache_lint_len = 20)
+  explicit AiMsgFeedCache(int cache_lint_len = 20)
       : cache_limt_len_(cache_lint_len) {}
-  ~HandLmkFeedCache() {}
+  ~AiMsgFeedCache() {}
 
   int Feed(const ai_msgs::msg::PerceptionTargets::ConstSharedPtr& msg) {
     ai_msgs::msg::PerceptionTargets::UniquePtr ai_msg(
@@ -146,6 +146,12 @@ class HandLmkFeedCache {
           break;
         }
       }
+    } else {
+      if (!recved_aimsg_ts_.empty() && recved_aimsg_ts_.top().sec == 0) {
+        std::string ts = std::to_string(0) + "." + std::to_string(0);
+        feed_predict = std::move(recved_aimsg_cache_.at(ts));
+        recved_aimsg_ts_.pop();
+      }
     }
 
     return feed_predict;
@@ -184,7 +190,7 @@ class AiMsgManage {
                     int time_out_ms = 200);
 
  private:
-  HandLmkFeedCache hand_lmk_feed_cache_;
+  AiMsgFeedCache ai_msg_feed_cache_;
   // resizer model input size limit
   // roi, width & hight must be in range [16, 256)
   int32_t roi_size_max_ = 255;

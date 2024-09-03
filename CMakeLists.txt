@@ -1,4 +1,4 @@
-# Copyright (c) 2024，Horizon Robotics.
+# Copyright (c) 2024，D-Robotics.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -69,6 +69,7 @@ include_directories(
 link_directories(
   ${CMAKE_SYSROOT}/usr/lib/hbbpu/
   ${CMAKE_SYSROOT}/usr/lib/hbmedia/
+  ${CMAKE_SYSROOT}/usr/hobot/lib/
 )
 
 add_executable(${PROJECT_NAME}
