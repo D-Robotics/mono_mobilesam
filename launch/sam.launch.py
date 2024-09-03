@@ -1,4 +1,4 @@
-# Copyright (c) 2024，Horizon Robotics.
+# Copyright (c) 2024，D-Robotics.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -181,7 +181,7 @@ def generate_launch_description():
             {"msg_pub_topic_name": LaunchConfiguration(
                 "sam_msg_pub_topic_name")}
         ],
-        arguments=['--ros-args', '--log-level', 'info']
+        arguments=['--ros-args', '--log-level', 'warn']
     )
 
     shared_mem_node = IncludeLaunchDescription(

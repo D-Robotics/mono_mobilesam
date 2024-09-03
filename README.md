@@ -120,7 +120,7 @@ X86 Ubuntu version: ubuntu22.04
 | is_shared_mem_sub   | Subscribe to images using shared memory communication method | No  | int |0                   |
 | is_regular_box  | is use regular box | 否                   | int | 0                   |
 | dump_render_img     | Whether to render, 0: no; 1: yes       | No                   | int |0                   |
-| ai_msg_sub_topic_name | Topic name for subscribing ai msg to change detect box | No | string | /hobot_detection |
+| ai_msg_sub_topic_name | Topic name for subscribing ai msg to change detect box | No | string | /hobot_dnn_detection |
 | ai_msg_pub_topic_name | Topic name for publishing intelligent results for web display | No | string | /hobot_sam |
 | ros_img_sub_topic_name | Topic name for subscribing image msg | No | string | /image |
 
@@ -129,7 +129,7 @@ X86 Ubuntu version: ubuntu22.04
 - Topic control: mono_mobilesam supports controlling detection boxes through ai msg topic messages, as an example:
 
 ```shell
-ros2 topic pub /hobot_detection ai_msgs/msg/PerceptionTargets '{ "header": { "stamp": { "sec": '$(date +%s)', "nanosec": '$(date +%N)' } }, "targets": [{"rois": [{"rect": {"x_offset": 96, "y_offset": 96, "width": 192, "height": 96}, "type": "anything"}]}] }'
+ros2 topic pub /hobot_dnn_detection ai_msgs/msg/PerceptionTargets '{"targets": [{"rois": [{"rect": {"x_offset": 96, "y_offset": 96, "width": 192, "height": 96}, "type": "anything"}]}] }'
 ```
 
 ## Running
@@ -152,11 +152,11 @@ ros2 run mono_mobilesam mono_mobilesam --ros-args -p feed_type:=0 -p image:=conf
 
 ros2 run mono_mobilesam mono_mobilesam --ros-args -p feed_type:=1 -p is_shared_mem_sub:=1 -p is_regular_box:=1 --ros-args --log-level warn
 
-# Run mode 3: Shared memory communication method (topic name: /hbmem_img), set the controlled topic name (topic name: /hobot_detection) to and set the log level to warn. At the same time, send a ai topic (topic name: /hobot_detection) in another window to change the detection box:
+# Run mode 3: Shared memory communication method (topic name: /hbmem_img), set the controlled topic name (topic name: /hobot_dnn_detection) to and set the log level to warn. At the same time, send a ai topic (topic name: /hobot_dnn_detection) in another window to change the detection box:
 
-ros2 run mono_mobilesam mono_mobilesam --ros-args -p feed_type:=1 --ros-args --log-level warn -p ai_msg_sub_topic_name:="/hobot_detection"
+ros2 run mono_mobilesam mono_mobilesam --ros-args -p feed_type:=1 --ros-args --log-level warn -p ai_msg_sub_topic_name:="/hobot_dnn_detection"
 
-ros2 topic pub /hobot_detection ai_msgs/msg/PerceptionTargets '{ "header": { "stamp": { "sec": '$(date +%s)', "nanosec": '$(date +%N)' } }, "targets": [{"rois": [{"rect": {"x_offset": 96, "y_offset": 96, "width": 192, "height": 96}, "type": "anything"}]}] }'
+ros2 topic pub /hobot_dnn_detection ai_msgs/msg/PerceptionTargets '{"targets": [{"rois": [{"rect": {"x_offset": 96, "y_offset": 96, "width": 192, "height": 96}, "type": "anything"}]}] }'
 ```
 
 Running method 2, use a launch file:
@@ -194,11 +194,11 @@ cp -r install/lib/mono_mobilesam/config/ .
 
 ./install/lib/mono_mobilesam/mono_mobilesam --ros-args -p feed_type:=1 -p is_shared_mem_sub:=1 -p is_regular_box:=1 --ros-args --log-level warn
 
-# Run mode 3: Shared memory communication method (topic name: /hbmem_img), set the controlled topic name (topic name: /hobot_detection) to and set the log level to warn. At the same time, send a ai topic (topic name: /hobot_detection) in another window to change the detection box:
+# Run mode 3: Shared memory communication method (topic name: /hbmem_img), set the controlled topic name (topic name: /hobot_dnn_detection) to and set the log level to warn. At the same time, send a ai topic (topic name: /hobot_dnn_detection) in another window to change the detection box:
 
-./install/lib/mono_mobilesam/mono_mobilesam --ros-args -p feed_type:=1 --ros-args --log-level warn -p ai_msg_sub_topic_name:="/hobot_detection"
+./install/lib/mono_mobilesam/mono_mobilesam --ros-args -p feed_type:=1 --ros-args --log-level warn -p ai_msg_sub_topic_name:="/hobot_dnn_detection"
 
-ros2 topic pub /hobot_detection ai_msgs/msg/PerceptionTargets '{ "header": { "stamp": { "sec": '$(date +%s)', "nanosec": '$(date +%N)' } }, "targets": [{"rois": [{"rect": {"x_offset": 96, "y_offset": 96, "width": 192, "height": 96}, "type": "anything"}]}] }'
+ros2 topic pub /hobot_dnn_detection ai_msgs/msg/PerceptionTargets '{"targets": [{"rois": [{"rect": {"x_offset": 96, "y_offset": 96, "width": 192, "height": 96}, "type": "anything"}]}] }'
 ```
 
 ## Run on X86 Ubuntu system:

@@ -1,4 +1,4 @@
-// Copyright (c) 2024，Horizon Robotics.
+// Copyright (c) 2024，D-Robotics.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 #include <unistd.h>
 
 #include <algorithm>
-#include <fstream>
 #include <map>
 #include <memory>
 #include <string>
@@ -44,7 +43,7 @@ void AiMsgManage::Feed(
   RCLCPP_INFO(
       rclcpp::get_logger("sam_msg_manage"), "%s", ss.str().c_str());
 
-  hand_lmk_feed_cache_.Feed(msg);
+  ai_msg_feed_cache_.Feed(msg);
 }
 
 int AiMsgManage::GetTargetRois(
@@ -57,7 +56,7 @@ int AiMsgManage::GetTargetRois(
     int time_out_ms) {
   std::string ts =
       std::to_string(msg_ts.sec) + "." + std::to_string(msg_ts.nanosec);
-  ai_msg = hand_lmk_feed_cache_.Get(msg_ts, time_out_ms);
+  ai_msg = ai_msg_feed_cache_.Get(msg_ts, time_out_ms);
   if (!ai_msg) {
     RCLCPP_INFO(rclcpp::get_logger("sam_msg_manage"),
                 "Frame find ai ts %s fail",
@@ -73,7 +72,7 @@ int AiMsgManage::GetTargetRois(
                "Frame ai ts: %s targets size: %d",
                ts.c_str(),
                ai_msg->targets.size());
-  size_t hand_roi_idx = 0;
+  size_t roi_idx = 0;
   for (const auto target : ai_msg->targets) {
     RCLCPP_DEBUG(rclcpp::get_logger("sam_msg_manage"),
                  "target.rois.size: %d",
@@ -124,12 +123,12 @@ int AiMsgManage::GetTargetRois(
                     "rois size: %d",
                     rois->size());
       // 原始roi的索引对应于valid_rois的索引
-      valid_roi_idx[hand_roi_idx] = rois->size() - 1;
+      valid_roi_idx[roi_idx] = rois->size() - 1;
 
       RCLCPP_DEBUG(rclcpp::get_logger("sam_msg_manage"),
                     "Valid roi map: %d %d",
-                    hand_roi_idx,
-                    valid_roi_idx[hand_roi_idx]);
+                    roi_idx,
+                    valid_roi_idx[roi_idx]);
 
       RCLCPP_DEBUG(rclcpp::get_logger("sam_msg_manage"),
                     "Valid roi: %d %d %d %d, roi_w: %d, roi_h: %d, "
@@ -143,7 +142,7 @@ int AiMsgManage::GetTargetRois(
                     max_size,
                     min_size);
 
-      hand_roi_idx++;
+      roi_idx++;
     }
   }
   return 0;

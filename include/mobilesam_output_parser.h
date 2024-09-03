@@ -1,4 +1,4 @@
-// Copyright (c) 2024，Horizon Robotics.
+// Copyright (c) 2024，D-Robotics.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -72,6 +72,9 @@ class MobileSamOutputParser {
     const int model_w,
     Perception& perception,
     float ratio = 1.0);
+
+  int32_t UpdateBox(std::vector<float> &box,
+                    Perception& perception);
 
  private:
   int num_classes_ = 5;
